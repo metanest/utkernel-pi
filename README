@@ -7,6 +7,8 @@ This is porting of Micro T-Kernel for Raspberry Pi.
 This is "Modified Source Code" of Micro T-Kernel, please read
 docs/T-License2.0.pdf and obey it.
 
+Distribution No. of T-Kernel Traceability Service is 0007003D.
+
 ----
 
 μT-Kernel の Raspberry Pi 移植版です。
@@ -16,3 +18,6 @@ docs/T-License2.0.pdf and obey it.
 
 移植にあたっての変更部分などは docs/porting_ja.txt にまとめて
 あります。
+
+T-Kernel トレーサビリティサービスのディストリビューション番号は
+0007003D です。

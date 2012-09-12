@@ -1,0 +1,165 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	@(#)functions.list
+#
+
+
+# task management
+FUNCTIONS =	tk_cre_tsk tk_del_tsk tk_sta_tsk tk_ext_tsk \
+		tk_exd_tsk tk_ter_tsk tk_dis_dsp tk_ena_dsp \
+		tk_chg_pri tk_rot_rdq tk_rel_wai tk_get_tid \
+		tk_get_reg tk_set_reg tk_ref_tsk tk_sus_tsk \
+		tk_rsm_tsk tk_frsm_tsk tk_slp_tsk tk_wup_tsk \
+		tk_can_wup
+
+# semaphore
+FUNCTIONS +=	tk_cre_sem tk_del_sem tk_sig_sem tk_wai_sem \
+		tk_ref_sem
+
+# mutex
+FUNCTIONS +=	tk_cre_mtx tk_del_mtx tk_loc_mtx tk_unl_mtx \
+		tk_ref_mtx \
+		release_mutex signal_all_mutex chg_pri_mutex
+
+# eventflag
+FUNCTIONS +=	tk_cre_flg tk_del_flg tk_set_flg tk_clr_flg \
+		tk_wai_flg tk_ref_flg
+
+# mailbox
+FUNCTIONS +=	tk_cre_mbx tk_del_mbx tk_snd_mbx tk_rcv_mbx \
+		tk_ref_mbx
+
+# messagebuffer
+FUNCTIONS +=	tk_cre_mbf tk_del_mbf tk_snd_mbf tk_rcv_mbf \
+		tk_ref_mbf \
+		msg_to_mbf mbf_wakeup
+
+# rendezvous port
+FUNCTIONS +=	tk_cre_por tk_del_por tk_cal_por tk_acp_por \
+		tk_fwd_por tk_rpl_rdv tk_ref_por \
+		wspec_cal wspec_rdv wspec_slp
+
+# interrupt management
+FUNCTIONS +=	hll_inthdr tk_def_int #tk_ret_int
+
+# memorypool
+FUNCTIONS +=	tk_cre_mpl tk_del_mpl tk_get_mpl tk_rel_mpl \
+		tk_ref_mpl
+
+# fixed-size memorypool
+FUNCTIONS +=	tk_cre_mpf tk_del_mpf tk_get_mpf tk_rel_mpf \
+		tk_ref_mpf
+
+# time management
+FUNCTIONS +=	tk_set_tim tk_get_tim tk_get_otm tk_dly_tsk
+
+# cyclic handler
+FUNCTIONS +=	tk_cre_cyc tk_del_cyc tk_sta_cyc tk_stp_cyc \
+		tk_ref_cyc call_cychdr
+
+# alarm handler
+FUNCTIONS +=	tk_cre_alm tk_del_alm tk_sta_alm tk_stp_alm \
+		tk_ref_alm call_almhdr
+
+# system management
+FUNCTIONS +=	tk_ref_ver tk_ref_sys lowpow_discnt
+
+# susbsystem management
+FUNCTIONS +=	tk_def_ssy tk_ref_ssy \
+		svc_ientry
+
+# device management
+FUNCTIONS +=	tk_opn_dev tk_cls_dev tk_rea_dev tk_srea_dev \
+		tk_wri_dev tk_swri_dev tk_wai_dev tk_sus_dev \
+		tk_get_dev tk_ref_dev tk_oref_dev tk_lst_dev \
+		tk_evt_dev tk_def_dev tk_ref_idv
+
+# debugger support: list objects
+FUNCTIONS +=	td_lst_tsk td_lst_sem td_lst_flg td_lst_mbx \
+		td_lst_mtx td_lst_mbf td_lst_por td_lst_mpf \
+		td_lst_mpl td_lst_cyc td_lst_alm td_lst_ssy
+
+# debugger support: refer objects
+FUNCTIONS +=	td_ref_sem td_ref_flg td_ref_mbx td_ref_mtx \
+		td_ref_mbf td_ref_por td_ref_mpf td_ref_mpl \
+		td_ref_cyc td_ref_alm td_ref_ssy
+
+# debugger support: others
+FUNCTIONS +=	td_ref_tsk td_inf_tsk td_get_reg td_set_reg \
+		td_ref_sys td_get_tim td_get_otm td_rdy_que
+
+# debugger support: refer queue
+FUNCTIONS +=	td_sem_que td_flg_que td_mbx_que td_mtx_que \
+		td_smbf_que td_rmbf_que td_cal_que td_acp_que \
+		td_mpf_que td_mpl_que
+
+# debugger support: hook routines
+FUNCTIONS +=	td_hok_svc td_hok_dsp td_hok_int \
+		hook_enterfn hook_execfn hook_ienterfn
+
+# debugger support: object name
+FUNCTIONS +=	object_getname td_ref_dsname td_set_dsname
+
+
+# object getname
+FUNCTIONS +=	eventflag_getname mailbox_getname fix_memorypool_getname \
+		memorypool_getname messagebuffer_getname \
+		mutex_getname rendezvous_getname semaphore_getname \
+		task_getname cyclichandler_getname alarmhandler_getname
+
+# initialization/finalization
+FUNCTIONS +=	eventflag_initialize mailbox_initialize \
+		fix_memorypool_initialize memorypool_initialize \
+		messagebuffer_initialize mutex_initialize \
+		rendezvous_initialize semaphore_initialize \
+		cyclichandler_initialize alarmhandler_initialize \
+		subsystem_initialize \
+		devmgr_startup devmgr_cleanup initdevio \
+		finishdevio initialize_devmgr finish_devmgr
+
+# control block
+FUNCTIONS +=	flgcb_table mbxcb_table mpfcb_table mplcb_table \
+		mbfcb_table mtxcb_table porcb_table semcb_table \
+		cyccb_table almcb_table ssycb_table 
+
+# device manager
+FUNCTIONS +=	searchdevcb getrescb check_devdesc delopncb delreqcb \
+		chkopen close_device phydevnm request \
+		devcbtbl opncbtbl reqcbtbl resource_control_block \
+		dissuscnt devmgrlock defaultidev
+
+# task concerning
+FUNCTIONS +=	ctxtsk tcb_table task_initialize \
+		make_dormant make_ready make_non_ready \
+		change_task_priority rotate_ready_queue \
+		rotate_ready_queue_run \
+		del_tsk ter_tsk
+
+# wait concerning
+FUNCTIONS +=	wait_release_ok wait_release_ok_ercd wait_release_ng \
+		wait_release_tmout make_wait make_wait_reltim \
+		wait_delete wait_tskid gcb_make_wait \
+		gcb_change_priority gcb_top_of_wait_queue
+
+#
+FUNCTIONS +=	set_reg get_reg
+
+# memory concerning
+FUNCTIONS +=	appendfreeareabound get_blk rel_blk mpl_wakeup \
+		searchfreearea appendfreearea removefreeque \
+		insertareaque removeareaque \
+		imacb imalloc icalloc ifree init_imalloc
+

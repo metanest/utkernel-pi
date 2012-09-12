@@ -1,0 +1,53 @@
+/*
+ *----------------------------------------------------------------------
+ *    micro T-Kernel
+ *
+ *    Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+ *    micro T-Kernel is distributed under the T-License 2.0.
+ *----------------------------------------------------------------------
+ *
+ *    Version:   1.01.01
+ *    Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+ *
+ *----------------------------------------------------------------------
+ */
+
+/*
+ * modified for Raspberry Pi Type B by Makoto Kishimoto
+ */
+
+/*
+ *	kernel.lnk (sysmain, Raspberry Pi Type B)
+ *	linker script (RAM)
+ */
+
+OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
+OUTPUT_ARCH(arm)
+
+SECTIONS
+{
+	.init 0 : {
+		*(.vector)
+		*(.ftext)
+	}
+
+	.text : {
+		*(.text)
+		*(.rodata)
+	} =0
+	__data_org = . ;
+	.data : {
+		__data_start = . ;
+		*(.data)
+		__data_end = .;
+	}
+	.bss : {
+		__bss_start = .;
+		PROVIDE (__noinit_start = .);
+		*(.noinit)
+		PROVIDE (__noinit_end = .);
+		*(.bss)
+		*(COMMON)
+		__bss_end = .;
+	}
+}

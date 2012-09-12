@@ -1,0 +1,131 @@
+μT-Kernel for Raspberry Pi Type B 移植メモ
+
+[全般]
+
+ソースツリーから H8S/2212 版の枝は削除してある
+
+AT91 版をモディファイして Raspberry Pi 版を作成した
+ディレクトリ名は raspib
+
+[移植作業と直接の関係はない変更]
+
+Makefile から再帰的に make を呼んでいる部分を $(MAKE) に修正した
+
+いくつかのスクリプトの実行可能フラグが立っておらず、ビルドが
+失敗するので、実行可能フラグを立てた
+
+etc/sysdepend/app_raspib/makerules.sysdepend は大幅に編集した
+
+以下、AT91 版からの変更点を述べる
+
+[ビルド]
+
+作者のクロスビルド環境は、FreeBSD の ports の cross-binutils と
+cross-gcc である
+
+ARM の ABI には OABI と EABI があり、AT91 版は OABI を使っている。
+aspberry Pi 版は両方に対応できた。移植者としては、新しい EABI を
+使っていきたい。クロスコンパイラは次のようにビルドする
+
+$ cd $PORTS/devel/cross-binutils
+$ make BATCH=yes TGTARCH=arm TGTABI=eabi all
+$ su
+# make BATCH=yes TGTARCH=arm TGTABI=eabi install
+
+$ cd $PORTS/devel/cross-gcc
+$ make BATCH=yes TGTARCH=arm TGTABI=eabi WITH_FLOAT_TYPE=softfp WITH_OPTARGS=--with-fpu=vfp WITHOUT_OBJC=yes all
+$ su
+# make BATCH=yes TGTARCH=arm TGTABI=eabi WITH_FLOAT_TYPE=softfp WITH_OPTARGS=--with-fpu=vfp WITHOUT_OBJC=yes install
+
+また、GCC の構築において追加するパッチとして、添付の
+patch-gcc_config_arm_t-arm-elf を $PORTS/devel/cross-gcc/files に
+置いておくこと（ファイルをそこに置いておくと、自動的に、ports の
+ビルド時に当てるパッチとして追加される）
+
+[起動]
+
+AT91 版は RAM 版と ROM 版が作られ、RAM 版は何かによってロードされ
+実行、ROM 版は自分自身がリセットエントリから実行されるようになって
+いる
+
+実行には、Raspberry Piにシリアルコンソールが必須である
+
+Raspberry Pi 版は u-boot によりロードされ実行することを前提として
+おり、（ベクタテーブルを含む）0 番地にロードすること
+実行は 0 番地から実行すればよい（ u-boot の go 0 コマンド）
+
+具体的なセットアップと起動の手順は以下の通り
+
+・SD カードに Raspberry Pi 起動用の FAT パーティションを作る
+・https://github.com/raspberrypi/firmware/tree/master/boot から
+ - bootcode.bin loader.bin をコピー
+ - arm128_start.elf を start.elf という名前でコピー
+・u-boot-pi ( https://github.com/gonzoua/u-boot-pi ) をビルドして
+  u-boot.bin をコピー
+・config.txt というテキストファイルを作り、内容を
+  kernel=u-boot.bin とする
+・μT-Kernel をビルドした kernel.bin をコピー
+・u-boot のコマンドラインで fatload mmc 0 0 kernel.bin と
+  入力する
+・正常にロードできたら go 0 で実行する
+
+[メモリマップ]
+
+メモリマップは以下の通り
+
+0x00000000 -----------------------------------
+           | CPU の割込みベクタテーブル      | BCM 2835 内蔵 DRAM
+           | - - - - - - - - - - - - - - - - |
+           | コード領域                      |
+           | - - - - - - - - - - - - - - - - |
+           | 固定データ領域、可変データ領域  |
+0x02000000 | - - - - - - - - - - - - - - - - |
+           |  ヒープ ↓                      |
+           |                                 |
+           |                                 |
+           |                                 |
+           | スタック↑                      |
+0x04000000 |---------------------------------|
+           | ユーザーエリア（空き）          |
+           |                                 |
+           | 起動時に u-boot は自分自身を    |
+           | このあたりに移動                |
+0x08000000 |---------------------------------|
+           | GPU 用 (128MB固定)              |
+0x10000000 -----------------------------------
+
+0x20000000 -----------------------------------
+           | I/O                             |
+           -----------------------------------
+
+[割込み]
+
+Raspberry Pi は割込みコントローラを持たないので、icrt0.S 内の
+割込みハンドラが全ての IRQ を一旦ハンドルし、その後各割込み
+ハンドラを呼ぶ、という作りになっている。
+
+割込み番号 0〜63 が GPU 関連の割込み、64〜95 が CPU 関連の割込み
+である。番号 96〜128 をソフトウェア割込みに割り当てる。
+
+使用しているソフトウェア割込みは、
+
+SWI 100 SVC
+SWI 101 tk_ret_int
+SWI 102 ディスパッチャ
+SWI 103 デバッグ
+
+である
+
+例外・割込みハンドラについては AT91 と同様
+
+Raspberry Pi はレベルセンシティブの割込みしか持たず、割込み要因のクリアは
+発生元を操作する必要があるので、エッジセンシティブ用の機能は削ってある。
+
+[初期化]
+
+icrt0.S
+(1)スタックポインタの設定
+(2)BSSセクションのゼロクリア
+(3)mainの呼び出し
+（コード的にはシリアルの初期化も呼んでいるが、u-boot によりシリアルは
+初期化されている前提のため、何もしていない）

@@ -1,0 +1,47 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	tstdlib (included from sysmain)
+#
+
+TSTDLIB_S	= ../../../tstdlib
+MKFF		= $(BD)/etc/mkfuncfiles
+
+# source files
+TSTDLIB_SRC	+=
+
+# source file path
+VPATH   += $(TSTDLIB_S)
+HEADER  += $(TSTDLIB_S)
+
+# Manager and Driver objects
+I_OBJ	+=
+
+# source files including functions
+TSTDLIB_ORGSRC	+= bitop.c
+
+# source files for each syscall
+include $(TSTDLIB_S)/functions.list
+TSTDLIB_FUNCSRC	= $(addsuffix .c, $(basename $(TSTDLIB_FUNCTIONS)))
+TSTDLIB_SRC	+= $(TSTDLIB_FUNCSRC)
+TSTDLIB_OBJ	= $(addsuffix .o, $(basename $(TSTDLIB_SRC)))
+
+# syscall source files
+VPATH	+= $(TSTDLIB_S)/func
+HEADER	+= $(TSTDLIB_S)/func
+
+
+TSTDLIB_TARGET	= libtstdlib.a

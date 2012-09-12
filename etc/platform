@@ -1,0 +1,27 @@
+#! /bin/sh -e
+#	platform
+#
+#	check closs platform
+#
+#	"SunOS-sparc"	: Solaris Ultra
+#	"SunOS-i386"	: Solaris x86
+#	"Linux-i686"	: Linux x86
+#	"FreeBSD-i386"	: FreeBSD x86
+#	"unknown"	: unknown platform
+#
+usage='usage: platform'
+
+PATH=/usr/bin:/bin
+
+os=`uname -s`
+
+case $os in
+  SunOS)	platform=$os-`uname -p` ;;
+  Linux)	platform=$os-`uname -m` ;;
+  FreeBSD)	platform=$os-`uname -p` ;;
+  *)		platform=unknown ;;
+esac
+
+echo $platform
+
+exit 0

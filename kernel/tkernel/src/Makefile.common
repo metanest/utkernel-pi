@@ -1,0 +1,122 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	micro T-Kernel (common description)
+#
+
+# source file dependencies (generated automatically)
+DEPS = Dependencies
+DEPENDENCIES_OUTPUT := $(DEPS)
+
+# ----------------------------------------------------------------------------
+
+# target object
+TARGET	= libtkernel.a
+
+S	= ../../src
+MKFF	= $(BD)/etc/mkfuncfiles
+
+# common source files (not to be devided)
+SRC	+=	tkstart.c timer.c klock.c \
+		tkdev_init.c cpu_init.c cpu_support.S
+
+# common source files to be devided
+ORGSRC	+=	wait.c task.c task_manage.c task_sync.c \
+		semaphore.c mutex.c eventflag.c \
+		mailbox.c messagebuf.c rendezvous.c \
+		mempool.c mempfix.c time_calls.c misc_calls.c \
+		subsystem.c device.c deviceio.c objname.c \
+		memory.c
+
+# system-dependent source files to be devided
+ORGSRC_SYSDEPEND +=	cpu_calls.c
+
+
+# source files for each syscall
+include $(S)/functions.list
+FUNCSRC	= $(addsuffix .c, $(basename $(FUNCTIONS)))
+SRC	+= $(FUNCSRC)
+
+VPATH	+= $(S)
+HEADER	+= $(S)
+
+# additional source files (cpu-dependent)
+VPATH   += ../../../sysdepend/cpu/$(MACHINE)
+HEADER	+= ../../../sysdepend/cpu/$(MACHINE)
+
+# additional source files (device-dependent)
+VPATH   += ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+HEADER	+= ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+
+# header file path (T-Kernel common standard library)
+HEADER  += ../../../tstdlib
+
+# config file path (kernel settings)
+HEADER  += ../../../../config
+
+# syscall source files
+VPATH   += $(S)/func
+HEADER	+= $(S)/func
+
+# syscall source files (cpu-dependent)
+VPATH   += ../../../sysdepend/cpu/$(MACHINE)/func
+HEADER	+= ../../../sysdepend/cpu/$(MACHINE)/func
+
+
+OBJ = $(addsuffix .o, $(basename $(SRC)))
+OBJ += $(FUNCOBJ)
+
+ASM_SRC = $(filter %.S, $(SRC))
+ASM_OBJ	= $(addsuffix .o, $(basename $(ASM_SRC)))
+
+# compiler options
+CFLAGS += $(CFLAGS_WARNING)
+
+# ----------------------------------------------------------------------------
+
+.PHONY: all clean source clean_source
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(AR) $(ARFLAGS) $@ $?
+  ifdef RANLIB
+	$(RANLIB) $@
+  endif
+
+source: $(ORGSRC)
+	(cd $(S); \
+	 for infile in $(ORGSRC) ; do \
+	   $(MKFF) $$infile ; \
+	 done ); \
+	(cd ../../../sysdepend/cpu/$(MACHINE) ; \
+	 for infile in $(ORGSRC_SYSDEPEND) ; do \
+	   $(MKFF) $$infile ; \
+	 done );
+
+clean:
+	@$(RM) $(OBJ) $(TARGET) $(DEPS)
+
+clean_source:
+	(cd $(S)/func ; \
+	 $(RM) *.c ); \
+	(cd ../../../sysdepend/cpu/$(MACHINE)/func ; \
+	 $(RM) *.c )
+
+# generate dependencies
+$(DEPS): ; touch $(DEPS)
+include $(DEPS)
+

@@ -1,0 +1,157 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+# modified for Raspberry Pi Type B by Makoto Kishimoto
+
+#
+#	Makefile for gmake
+#	sysmain (common description)
+#
+
+# source file dependencies (generated automatically)
+DEPS = Dependencies
+DEPENDENCIES_OUTPUT := $(DEPS)
+
+# ----------------------------------------------------------------------------
+
+# T-Kernel common standard library
+include ../../../tstdlib/Makefile.tstdlib
+
+# user main
+include ../../../usermain/Makefile.usermain
+
+# kernel install path
+KERNEL_INSTALLDIR	= ../../../bin/$(TETYPE)_$(MACHINE)
+
+# kernel modules path
+OBJ_TKERNEL_PATH	= ../../../tkernel/build/$(TETYPE)_$(MACHINE)
+OBJ_SYSINIT_PATH	= ../../../sysinit/build/$(TETYPE)_$(MACHINE)
+
+LIBRARY_PATH	= ../../../../lib/build/$(TETYPE)_$(MACHINE)
+
+# ----------------------------------------------------------------------------
+
+# target objects
+TARGET_ELF	= kernel.elf
+TARGET_BIN	= kernel.bin
+TARGET_CRT0	= icrt0.o
+
+S	= ../../src
+
+# common source files
+SRC	+= inittask_main.c
+VPATH	+= $(S)
+HEADER	+= $(S)
+
+# additional source files (cpu-dependent)
+VPATH   += ../../../sysdepend/cpu/$(MACHINE)
+HEADER  += ../../../sysdepend/cpu/$(MACHINE)
+
+# additional source files (device-dependent)
+VPATH   += ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+HEADER  += ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+
+# header file path (kernel settings)
+HEADER  += ../../../tkernel/src
+
+# config file path (kernel settings)
+HEADER  += ../../../../config
+
+OBJ	= $(addsuffix .o, $(basename $(SRC)))
+
+# T-Kernel modules
+K_OBJ	+=	$(OBJ_SYSINIT_PATH)/sysinit.o
+
+
+# gcc standard library
+STDLIB = -lgcc
+
+# additional library
+LDSYSLIBS += -ltm -ltstdlib -ltk -ltkernel -lsvc
+LDLIBS += $(LDSYSLIBS) $(LDUSRLIBS) $(LDSYSLIBS) $(LDUSRLIBS)
+
+
+
+# linker options
+LDFLAGS += -static -nostdlib -T $(LINKSCRIPT) -L$(OBJ_TKERNEL_PATH) -L./
+
+LINKSCRIPT = kernel.lnk
+
+# compiler options
+CFLAGS += $(CFLAGS_WARNING)
+CPPFLAGS +=
+
+# ----------------------------------------------------------------------------
+
+.PHONY: all clean install source clean_source tstdlib_source tstdlib_obj
+
+ALL  = $(TARGET_ELF) $(TARGET_BIN) $(TARGET:%.elf=%.map) $(TARGET:%.elf=%.mot)
+
+all: lib tstdlib tkernel sysinit $(ALL) $(TARGET_CRT0)
+
+$(TARGET_ELF): $(TARGET_CRT0) $(OBJ) $(K_OBJ) $(I_OBJ)
+	$(CC) $(TARGET_ARCH) $(LDFLAGS) $^ $(LDLIBS) $(STDLIB) $(OUTPUT_OPTION)
+
+$(TARGET_BIN): $(TARGET_ELF)
+	$(OBJCOPY) $(OUTPUT_BINARY) $< $@
+
+$(TARGET_ELF:%.elf=%.map): $(TARGET_ELF)
+	$(NM) $(NMFLAGS) $< > $@
+
+$(TARGET_ELF:%.elf=%.mot): $(TARGET_ELF)
+	$(OBJCOPY) $(OUTPUT_SREC) $< $@
+
+tkernel:
+	( cd $(OBJ_TKERNEL_PATH) ; $(MAKE) source ; $(MAKE))
+
+sysinit:
+	( cd $(OBJ_SYSINIT_PATH) ; $(MAKE) )
+
+tstdlib:
+	$(MAKE) tstdlib_source
+	$(MAKE) tstdlib_obj
+
+tstdlib_source: $(TSTDLIB_ORGSRC)
+	(cd $(TSTDLIB_S); \
+	 for infile in $(TSTDLIB_ORGSRC) ; do \
+	   $(MKFF) $$infile ; \
+	 done )
+
+tstdlib_obj: $(TSTDLIB_TARGET)
+
+$(TSTDLIB_TARGET): $(TSTDLIB_OBJ)
+	$(AR) $(ARFLAGS) $@ $?
+  ifdef RANLIB
+	$(RANLIB) $@
+  endif
+
+lib:
+	(cd $(LIBRARY_PATH); $(MAKE))
+
+clean: clean_source
+	( cd $(OBJ_TKERNEL_PATH) ; $(MAKE) clean clean_source)
+	( cd $(OBJ_SYSINIT_PATH) ; $(MAKE) clean )
+	$(RM) $(OBJ) $(TARGET_CRT0) $(TSTDLIB_OBJ) $(TSTDLIB_TARGET) $(ALL) $(DEPS)
+	( cd $(LIBRARY_PATH) ; $(MAKE) clean)
+
+clean_source:
+	(cd $(TSTDLIB_S)/func ; $(RM) $(TSTDLIB_FUNCSRC))
+
+install: $(addprefix $(EXE_INSTALLDIR)/, $(ALL))
+
+$(addprefix $(EXE_INSTALLDIR)/, $(TARGET)): $(EXE_INSTALLDIR)/%: %
+
+# generate dependencies
+$(DEPS): ; touch $(DEPS)
+include $(DEPS)

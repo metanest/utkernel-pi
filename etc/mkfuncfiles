@@ -1,0 +1,104 @@
+#! /usr/local/bin/perl
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#	mkfuncfiles
+#
+#	micro T-Kernel functions
+#	singleton file generation script
+#
+#
+
+$usage = 'usage: mkfuncfiles infile';
+
+$infile = "";	# input file
+
+#
+# analyze command line parameter
+#
+$infile = $ARGV[0];
+if ( $infile eq "" ) {
+	print STDERR "Too few arguments\n";
+	exit(1);
+}
+
+#
+# parse definition file
+#
+open(IN, "$infile") || die "can not open $infile\n";
+
+$ignore = 1;
+$modified = 0;
+$common_defs = '';
+$common_defs_part = 0;
+$funcname = 'dummy';
+$funcname_UC = 'dummy';
+
+@srctime = stat($infile);
+
+while ( <IN> ) {
+
+	# skip to definition line
+	if ( $ignore != 0 ) {
+		if ( /^#ifdef.*USE_FUNC_([A-Za-z0-9_]*)/ ) {
+			$funcname_UC = $1;
+			$funcname = lc($1);
+			$dstfile = "func/${funcname}.c";
+			@dsttime = stat($dstfile);
+			if ( $dsttime[9] < $srctime[9] ) {
+				open(OUT, ">$dstfile") || die "can not open ${funcname}.c\n";
+
+				print OUT $common_defs;
+				print OUT $_;
+
+				$ignore = 0;
+				$modified = 1;
+			}
+		} elsif ( /^\/\*\* \[BEGIN Common Definitions\] \*\// ) {
+			$common_defs_part = 1;
+			$ignore = 0;
+		}
+		next;
+	} else {
+		if ( /^#endif.*\/\*.*${funcname_UC}.*\*\// ) {
+			if ( $modified == 1 ) {
+				print OUT $_;
+
+				close(OUT);
+				$ignore = 1;
+				$modified = 0;
+			}
+			next;
+		} elsif ( /^\/\*\* \[END Common Definitions\] \*\// ) {
+			$common_defs .= "\n\n";
+			$common_defs_part = 0;
+			$ignore = 1;
+			next;
+		}
+	}
+
+	if ( $common_defs_part ) {
+		$common_defs .= $_;
+	} else {
+		print OUT $_;
+	}
+
+}
+
+close(IN);
+
+if ( $funcname eq '' ) {
+	print stderr "There is no definition of any function.\n";
+	exit(1);
+}

@@ -1,0 +1,51 @@
+/*
+ *	micro T-Kernel function code (Debugger Support)
+ */
+
+#define TDFN_LST_TSK	0x8012
+#define TDFN_LST_SEM	0x8022
+#define TDFN_LST_FLG	0x8032
+#define TDFN_LST_MBX	0x8042
+#define TDFN_LST_MTX	0x8052
+#define TDFN_LST_MBF	0x8062
+#define TDFN_LST_POR	0x8072
+#define TDFN_LST_MPF	0x8082
+#define TDFN_LST_MPL	0x8092
+#define TDFN_LST_CYC	0x80a2
+#define TDFN_LST_ALM	0x80b2
+#define TDFN_LST_SSY	0x80c2
+#define TDFN_REF_SEM	0x80d2
+#define TDFN_REF_FLG	0x80e2
+#define TDFN_REF_MBX	0x80f2
+#define TDFN_REF_MTX	0x8102
+#define TDFN_REF_MBF	0x8112
+#define TDFN_REF_POR	0x8122
+#define TDFN_REF_MPF	0x8132
+#define TDFN_REF_MPL	0x8142
+#define TDFN_REF_CYC	0x8152
+#define TDFN_REF_ALM	0x8162
+#define TDFN_REF_SSY	0x8172
+#define TDFN_REF_TSK	0x8182
+#define TDFN_INF_TSK	0x8193
+#define TDFN_GET_REG	0x81a4
+#define TDFN_SET_REG	0x81b4
+#define TDFN_REF_SYS	0x81c1
+#define TDFN_GET_TIM	0x81d2
+#define TDFN_GET_OTM	0x81e2
+#define TDFN_RDY_QUE	0x81f3
+#define TDFN_SEM_QUE	0x8203
+#define TDFN_FLG_QUE	0x8213
+#define TDFN_MBX_QUE	0x8223
+#define TDFN_MTX_QUE	0x8233
+#define TDFN_SMBF_QUE	0x8243
+#define TDFN_RMBF_QUE	0x8253
+#define TDFN_CAL_QUE	0x8263
+#define TDFN_ACP_QUE	0x8273
+#define TDFN_MPF_QUE	0x8283
+#define TDFN_MPL_QUE	0x8293
+#define TDFN_HOK_SVC	0x82a1
+#define TDFN_HOK_DSP	0x82b1
+#define TDFN_HOK_INT	0x82c1
+#define TDFN_REF_DSNAME	0x82d3
+#define TDFN_SET_DSNAME	0x82e3
+

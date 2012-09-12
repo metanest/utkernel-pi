@@ -1,0 +1,91 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	libstr - micro T-Kernel string library (common description)
+#
+
+# source file dependencies (generated automatically)
+DEPS = Dependencies
+DEPENDENCIES_OUTPUT := $(DEPS)
+
+# ----------------------------------------------------------------------------
+
+# target file
+TARGET = libstr.a
+
+MKFF	= $(BD)/etc/mkfuncfiles
+
+# source file path
+S = ../../src
+VPATH = $(S) $(S)/sysdepend/$(MACHINE)
+HEADER += $(S) $(S)/sysdepend/$(MACHINE)
+
+# original source files to be devided
+ORGSRC += string.c
+
+# source files for each function
+include $(S)/functions.list
+FUNCSRC	= $(addsuffix .c, $(basename $(FUNCTIONS)))
+SRC	+= $(FUNCSRC)
+
+OBJ	= $(addsuffix .o, $(basename $(notdir $(SRC))))
+
+# functions source files
+VPATH   += $(S)/func
+HEADER	+= $(S)/func
+
+# compiler options
+CFLAGS += $(CFLAGS_WARNING)
+
+# ----------------------------------------------------------------------------
+
+.PHONY: all source obj clean clean_source install
+
+ALL = $(TARGET)
+
+all:
+	$(MAKE) source
+	$(MAKE) obj
+
+obj: $(ALL)
+
+$(TARGET): $(OBJ)
+	$(AR) $(ARFLAGS) $@ $?
+  ifdef RANLIB
+	$(RANLIB) $@
+  endif
+
+source: $(ORGSRC)
+	(cd $(S); \
+	 for infile in $(ORGSRC) ; do \
+	   $(MKFF) $$infile ; \
+	 done );
+
+install: $(TARGET:%=$(LIB_INSTALLDIR)/%)
+
+clean: clean_source
+	$(RM) $(OBJ) $(ALL) $(DEPS)
+
+clean_source:
+	@(cd $(S)/func ; $(RM) $(FUNCSRC))
+
+# generate dependencies
+ifdef DEPENDENCIES_OUTPUT
+  $(DEPS): ; touch $(DEPS)
+else
+  $(DEPS): $(SRC) ; $(MAKEDEPS) $@ $?
+endif
+include $(DEPS)

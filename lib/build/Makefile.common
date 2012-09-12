@@ -1,0 +1,47 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	library main (common description)
+#
+
+LIB_SYSDEP_TARGET = libtk libtm
+LIB_CPUDEP_TARGET = libsvc libstr
+
+LIB_ARCHIVE_OBJ = $(filter lib%, $(LIB_SYSDEP_TARGET) $(LIB_CPUDEP_TARGET))
+
+# ----------------------------------------------------------------------------
+
+all: $(LIB_SYSDEP_TARGET) $(LIB_CPUDEP_TARGET)
+
+$(LIB_SYSDEP_TARGET):
+	cd ../../$@/build/$(TETYPE)_$(MACHINE) ; \
+	$(MAKE) ; \
+	$(MAKE) install
+
+$(LIB_CPUDEP_TARGET):
+	cd ../../$@/build/$(MACHINE) ; \
+	$(MAKE) ; \
+	$(MAKE) install
+
+clean:
+	@( cd ../.. ; \
+	for dir in $(LIB_SYSDEP_TARGET); do \
+		( cd $$dir/build/$(TETYPE)_$(MACHINE) ; $(MAKE) clean ) ; \
+	done ; \
+	for dir in $(LIB_CPUDEP_TARGET); do \
+		( cd $$dir/build/$(MACHINE) ; $(MAKE) clean ) ; \
+	done ) ;
+	rm -rf $(addsuffix .a, $(LIB_ARCHIVE_OBJ)) *.o \#*.o.* \#*.a.*

@@ -1,0 +1,68 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	libtm - T-Monitor equivalent library (common description)
+#
+
+# source file dependencies (generated automatically)
+DEPS = Dependencies
+DEPENDENCIES_OUTPUT := $(DEPS)
+
+# ----------------------------------------------------------------------------
+
+# target file
+TARGET = libtm.a
+
+# source file path
+S = ../../src
+VPATH = $(S) $(S)/sysdepend/$(TETYPE)_$(MACHINE)
+HEADER += $(S) $(S)/sysdepend/$(TETYPE)_$(MACHINE)
+
+# source files
+SRC +=	tm_monitor.c tm_getchar.c tm_putchar.c tm_getline.c tm_putstring.c \
+	tm_exit.c tm_command.c
+
+OBJ = $(addsuffix .o, $(basename $(SRC)))
+
+# compiler options
+CFLAGS += $(CFLAGS_WARNING)
+
+# ----------------------------------------------------------------------------
+
+.PHONY: all clean install
+
+ALL = $(TARGET)
+
+all: $(ALL)
+
+$(TARGET): $(OBJ)
+	$(AR) $(ARFLAGS) $@ $?
+  ifdef RANLIB
+	$(RANLIB) $@
+  endif
+
+install: $(addprefix $(LIB_INSTALLDIR)/, $(ALL))
+
+clean:
+	$(RM) $(OBJ) $(ALL) $(DEPS)
+
+# generate dependencies
+ifdef DEPENDENCIES_OUTPUT
+  $(DEPS): ; touch $(DEPS)
+else
+  $(DEPS): $(SRC) ; $(MAKEDEPS) $@ $?
+endif
+include $(DEPS)

@@ -1,0 +1,76 @@
+#
+# ----------------------------------------------------------------------
+#     micro T-Kernel
+#
+#     Copyright (C) 2006-2011 by Ken Sakamura. All rights reserved.
+#     micro T-Kernel is distributed under the T-License 2.0.
+# ----------------------------------------------------------------------
+#
+#     Version:   1.01.01
+#     Released by T-Engine Forum(http://www.t-engine.org) at 2011/12/12.
+#
+# ----------------------------------------------------------------------
+#
+
+#
+#	Makefile for gmake
+#	sysinit (common description)
+#
+
+# source file dependencies (generated automatically)
+DEPS = Dependencies
+DEPENDENCIES_OUTPUT := $(DEPS)
+
+# ----------------------------------------------------------------------------
+
+# target object
+TARGET	= sysinit.o
+
+S	= ../../src
+
+# common source files
+SRC	+= sysinit_main.c sysstartup.c patch.c inittask_def.c
+
+VPATH	+= $(S)
+HEADER	+= $(S)
+
+# additional source files (cpu dependent)
+VPATH	+= ../../../sysdepend/cpu/$(MACHINE)
+HEADER	+= ../../../sysdepend/cpu/$(MACHINE)
+
+# additional source files (device dependent)
+VPATH	+= ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+HEADER	+=  ../../../sysdepend/device/$(TETYPE)_$(MACHINE)
+
+# additional source files (user define)
+VPATH	+= ../../../usermain
+HEADER	+=  ../../../usermain
+
+# header file path (kernel settings)
+HEADER  += ../../../tkernel/src
+
+# config file path (kernel settings)
+HEADER  += ../../../../config
+
+OBJ	= $(addsuffix .o, $(basename $(SRC)))
+
+# compiler options
+CFLAGS	+= $(CFLAGS_WARNING)
+
+# ----------------------------------------------------------------------------
+
+.PHONY: all clean
+
+ALL = $(TARGET) $(CRT0)
+
+all: $(ALL)
+
+$(TARGET): $(OBJ)
+	$(LINK_R.o) $^ $(OUTPUT_OPTION)
+
+clean:
+	$(RM) $(OBJ) $(ALL) $(DEPS)
+
+# generate dependencies
+$(DEPS): ; touch $(DEPS)
+include $(DEPS)
